@@ -6,13 +6,15 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { colorPalettes } from "@/lib/colorPalettes";
 
+const defaultSettings = {
+  size: 32,
+  colors: 16,
+  palette: colorPalettes[0],
+};
+
 export const BeadPattern = () => {
   const [image, setImage] = useState<string | null>(null);
-  const [settings, setSettings] = useState({
-    size: 32,
-    colors: 16,
-    palette: colorPalettes[0],
-  });
+  const [settings, setSettings] = useState(defaultSettings);
 
   const handleImageUpload = (imageUrl: string) => {
     setImage(imageUrl);
@@ -22,6 +24,11 @@ export const BeadPattern = () => {
   const handleDownload = () => {
     // Implementation für Download-Funktion kommt in der nächsten Version
     toast.info("Download-Funktion kommt bald!");
+  };
+
+  const handleReset = () => {
+    setSettings(defaultSettings);
+    toast.success("Einstellungen zurückgesetzt!");
   };
 
   return (
@@ -48,10 +55,22 @@ export const BeadPattern = () => {
           </div>
           
           <div className="space-y-6">
-            <PatternSettings
-              settings={settings}
-              onChange={setSettings}
-            />
+            <div className="flex gap-4">
+              <PatternSettings
+                settings={settings}
+                onChange={setSettings}
+                className="flex-1"
+              />
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleReset}
+                className="mt-12"
+                title="Standardeinstellungen"
+              >
+                ↺
+              </Button>
+            </div>
             <PatternPreview
               image={image}
               settings={settings}

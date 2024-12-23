@@ -19,11 +19,12 @@ interface PatternSettingsProps {
     colors: number;
     palette: ColorPalette;
   }) => void;
+  className?: string;
 }
 
-export const PatternSettings = ({ settings, onChange }: PatternSettingsProps) => {
+export const PatternSettings = ({ settings, onChange, className }: PatternSettingsProps) => {
   return (
-    <Card className="bg-white/80 backdrop-blur-sm">
+    <Card className={`bg-white/80 backdrop-blur-sm ${className}`}>
       <CardHeader>
         <CardTitle className="text-lg">Einstellungen</CardTitle>
       </CardHeader>

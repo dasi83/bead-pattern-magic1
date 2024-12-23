@@ -17,7 +17,7 @@ export const PatternPreview = ({ image, settings }: PatternPreviewProps) => {
     const data = imageData.data;
     
     // Konvertiere Hex-Farben zu RGB
-    const rgbPalette = palette.map(hex => {
+    const rgbPalette = palette.slice(0, settings.colors).map(hex => {
       const r = parseInt(hex.slice(1, 3), 16);
       const g = parseInt(hex.slice(3, 5), 16);
       const b = parseInt(hex.slice(5, 7), 16);
@@ -68,9 +68,7 @@ export const PatternPreview = ({ image, settings }: PatternPreviewProps) => {
       
       // Farbreduktion anwenden
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      // Wähle die ersten N Farben aus der Palette basierend auf settings.colors
-      const selectedColors = settings.palette.colors.slice(0, settings.colors);
-      const reducedImageData = reduceColors(imageData, selectedColors);
+      const reducedImageData = reduceColors(imageData, settings.palette.colors);
       ctx.putImageData(reducedImageData, 0, 0);
     };
   }, [image, settings]);
