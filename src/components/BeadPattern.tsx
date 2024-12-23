@@ -4,12 +4,14 @@ import { PatternPreview } from "./PatternPreview";
 import { PatternSettings } from "./PatternSettings";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { colorPalettes } from "@/lib/colorPalettes";
 
 export const BeadPattern = () => {
   const [image, setImage] = useState<string | null>(null);
   const [settings, setSettings] = useState({
     size: 32,
     colors: 16,
+    palette: colorPalettes[0],
   });
 
   const handleImageUpload = (imageUrl: string) => {

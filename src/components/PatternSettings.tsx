@@ -5,13 +5,20 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ColorPalette } from "@/lib/colorPalettes";
+import { ColorPaletteSelector } from "./ColorPaletteSelector";
 
 interface PatternSettingsProps {
   settings: {
     size: number;
     colors: number;
+    palette: ColorPalette;
   };
-  onChange: (settings: { size: number; colors: number }) => void;
+  onChange: (settings: {
+    size: number;
+    colors: number;
+    palette: ColorPalette;
+  }) => void;
 }
 
 export const PatternSettings = ({ settings, onChange }: PatternSettingsProps) => {
@@ -50,6 +57,16 @@ export const PatternSettings = ({ settings, onChange }: PatternSettingsProps) =>
             max={32}
             step={2}
             className="w-full"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Farbpalette</label>
+          <ColorPaletteSelector
+            selectedPalette={settings.palette}
+            onPaletteChange={(palette) =>
+              onChange({ ...settings, palette })
+            }
           />
         </div>
       </CardContent>
