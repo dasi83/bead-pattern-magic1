@@ -34,7 +34,7 @@ export const ColorPaletteSelector = ({
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Wähle eine Farbpalette" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-white border shadow-lg">
             {colorPalettes.map((palette) => (
               <SelectItem
                 key={`${palette.manufacturer}-${palette.name}`}
