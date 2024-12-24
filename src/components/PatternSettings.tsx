@@ -68,6 +68,7 @@ export const PatternSettings = ({ settings, onChange, className }: PatternSettin
             onPaletteChange={(palette) =>
               onChange({ ...settings, palette })
             }
+            maxColors={settings.colors}
           />
         </div>
       </CardContent>

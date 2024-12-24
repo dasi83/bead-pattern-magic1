@@ -2,6 +2,7 @@ export type ColorPalette = {
   name: string;
   manufacturer: string;
   colors: string[];
+  activeColors: boolean[];
 };
 
 export const colorPalettes: ColorPalette[] = [
@@ -9,66 +10,33 @@ export const colorPalettes: ColorPalette[] = [
     name: "Hama Standard",
     manufacturer: "Hama",
     colors: [
-      "#FFFFFF", // Weiß
-      "#000000", // Schwarz
-      "#FF0000", // Rot
-      "#FFD700", // Gold
-      "#FFA500", // Orange
-      "#FFFF00", // Gelb
-      "#90EE90", // Hellgrün
-      "#008000", // Grün
-      "#87CEEB", // Himmelblau
-      "#0000FF", // Blau
-      "#4B0082", // Indigo
-      "#800080", // Lila
-      "#FFC0CB", // Rosa
-      "#8B4513", // Braun
-      "#808080", // Grau
-      "#A0522D", // Sienna
-    ]
+      "#FFFFFF", "#000000", "#FF0000", "#FFD700",
+      "#FFA500", "#FFFF00", "#90EE90", "#008000",
+      "#87CEEB", "#0000FF", "#4B0082", "#800080",
+      "#FFC0CB", "#8B4513", "#808080", "#A0522D",
+    ],
+    activeColors: Array(16).fill(true)
   },
   {
     name: "Perler Original",
     manufacturer: "Perler",
     colors: [
-      "#FFFFFF", // Weiß
-      "#000000", // Schwarz
-      "#FF0000", // Rot
-      "#FFA500", // Orange
-      "#FFD700", // Gold
-      "#FFFF00", // Gelb
-      "#32CD32", // Limette
-      "#008000", // Grün
-      "#00FFFF", // Cyan
-      "#0000FF", // Blau
-      "#800080", // Lila
-      "#FF69B4", // Pink
-      "#8B4513", // Braun
-      "#A0522D", // Sienna
-      "#C0C0C0", // Silber
-      "#808080", // Grau
-    ]
+      "#FFFFFF", "#000000", "#FF0000", "#FFA500",
+      "#FFD700", "#FFFF00", "#32CD32", "#008000",
+      "#00FFFF", "#0000FF", "#800080", "#FF69B4",
+      "#8B4513", "#A0522D", "#C0C0C0", "#808080",
+    ],
+    activeColors: Array(16).fill(true)
   },
   {
     name: "Artkal Mini",
     manufacturer: "Artkal",
     colors: [
-      "#FFFFFF", // Weiß
-      "#000000", // Schwarz
-      "#FF0000", // Rot
-      "#FFA500", // Orange
-      "#FFD700", // Gold
-      "#FFFF00", // Gelb
-      "#90EE90", // Hellgrün
-      "#008000", // Grün
-      "#00FFFF", // Cyan
-      "#0000FF", // Blau
-      "#4B0082", // Indigo
-      "#800080", // Lila
-      "#FF69B4", // Pink
-      "#8B4513", // Braun
-      "#C0C0C0", // Silber
-      "#808080", // Grau
-    ]
+      "#FFFFFF", "#000000", "#FF0000", "#FFA500",
+      "#FFD700", "#FFFF00", "#90EE90", "#008000",
+      "#00FFFF", "#0000FF", "#4B0082", "#800080",
+      "#FF69B4", "#8B4513", "#C0C0C0", "#808080",
+    ],
+    activeColors: Array(16).fill(true)
   }
 ];

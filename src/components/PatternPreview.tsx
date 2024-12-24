@@ -13,16 +13,19 @@ interface PatternPreviewProps {
 export const PatternPreview = ({ image, settings }: PatternPreviewProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const reduceColors = (imageData: ImageData, palette: string[]) => {
+  const reduceColors = (imageData: ImageData, palette: ColorPalette) => {
     const data = imageData.data;
     
-    // Konvertiere Hex-Farben zu RGB
-    const rgbPalette = palette.slice(0, settings.colors).map(hex => {
-      const r = parseInt(hex.slice(1, 3), 16);
-      const g = parseInt(hex.slice(3, 5), 16);
-      const b = parseInt(hex.slice(5, 7), 16);
-      return [r, g, b];
-    });
+    // Konvertiere Hex-Farben zu RGB und berücksichtige nur aktive Farben
+    const rgbPalette = palette.colors
+      .filter((_, index) => palette.activeColors[index])
+      .slice(0, settings.colors)
+      .map(hex => {
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+        return [r, g, b];
+      });
     
     // Ordne jedem Pixel die nächstgelegene Farbe aus der Palette zu
     for (let i = 0; i < data.length; i += 4) {
@@ -68,7 +71,7 @@ export const PatternPreview = ({ image, settings }: PatternPreviewProps) => {
       
       // Farbreduktion anwenden
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const reducedImageData = reduceColors(imageData, settings.palette.colors);
+      const reducedImageData = reduceColors(imageData, settings.palette);
       ctx.putImageData(reducedImageData, 0, 0);
     };
   }, [image, settings]);
