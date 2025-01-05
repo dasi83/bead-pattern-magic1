@@ -1,57 +1,22 @@
-import { useEffect, useRef } from "react";
-import { ColorPalette } from "@/lib/colorPalettes";
+import { useEffect, useRef, useState } from "react";
+import { ColorPalette, webSafeColors } from "@/lib/colorPalettes";
+import { ColorMapping } from "./ColorMapping";
+import { calculateAverageColor, findClosestColor, rgbToHex, reduceColors } from "@/lib/imageProcessing";
 
 interface PatternPreviewProps {
   image: string;
   settings: {
-    size: number;
+    width: number;
+    height: number;
     colors: number;
     palette: ColorPalette;
+    showGrid: boolean;
   };
 }
 
 export const PatternPreview = ({ image, settings }: PatternPreviewProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  const reduceColors = (imageData: ImageData, palette: ColorPalette) => {
-    const data = imageData.data;
-    
-    // Konvertiere Hex-Farben zu RGB und berücksichtige nur aktive Farben
-    const rgbPalette = palette.colors
-      .filter((_, index) => palette.activeColors[index])
-      .slice(0, settings.colors)
-      .map(hex => {
-        const r = parseInt(hex.slice(1, 3), 16);
-        const g = parseInt(hex.slice(3, 5), 16);
-        const b = parseInt(hex.slice(5, 7), 16);
-        return [r, g, b];
-      });
-    
-    // Ordne jedem Pixel die nächstgelegene Farbe aus der Palette zu
-    for (let i = 0; i < data.length; i += 4) {
-      const color = [data[i], data[i + 1], data[i + 2]];
-      let minDist = Infinity;
-      let closestColor = rgbPalette[0];
-      
-      rgbPalette.forEach(paletteColor => {
-        const dist = Math.sqrt(
-          Math.pow(color[0] - paletteColor[0], 2) +
-          Math.pow(color[1] - paletteColor[1], 2) +
-          Math.pow(color[2] - paletteColor[2], 2)
-        );
-        if (dist < minDist) {
-          minDist = dist;
-          closestColor = paletteColor;
-        }
-      });
-      
-      data[i] = closestColor[0];
-      data[i + 1] = closestColor[1];
-      data[i + 2] = closestColor[2];
-    }
-    
-    return imageData;
-  };
+  const [colorMapping, setColorMapping] = useState<{ original: string; mapped: string }[]>([]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -63,25 +28,117 @@ export const PatternPreview = ({ image, settings }: PatternPreviewProps) => {
     const img = new Image();
     img.src = image;
     img.onload = () => {
-      canvas.width = settings.size;
-      canvas.height = settings.size;
+      canvas.width = settings.width;
+      canvas.height = settings.height;
       
-      ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(img, 0, 0, settings.size, settings.size);
+      const tempCanvas = document.createElement('canvas');
+      const tempCtx = tempCanvas.getContext('2d');
+      if (!tempCtx) return;
       
-      // Farbreduktion anwenden
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const reducedImageData = reduceColors(imageData, settings.palette);
-      ctx.putImageData(reducedImageData, 0, 0);
+      tempCanvas.width = img.width;
+      tempCanvas.height = img.height;
+      tempCtx.drawImage(img, 0, 0);
+      
+      const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+      const cellWidth = Math.ceil(tempCanvas.width / settings.width);
+      const cellHeight = Math.ceil(tempCanvas.height / settings.height);
+      
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Erste Phase: Sammle alle Farben und ihre Häufigkeit
+      const colorCounts = new Map<string, number>();
+      const allColors = new Map<string, { r: number; g: number; b: number }>();
+      
+      for (let y = 0; y < settings.height; y++) {
+        for (let x = 0; x < settings.width; x++) {
+          const avgColor = calculateAverageColor(
+            imageData,
+            x * cellWidth,
+            y * cellHeight,
+            tempCanvas.width,
+            tempCanvas.height,
+            cellWidth,
+            cellHeight
+          );
+          
+          const originalHex = rgbToHex(avgColor.r, avgColor.g, avgColor.b);
+          colorCounts.set(originalHex, (colorCounts.get(originalHex) || 0) + 1);
+          allColors.set(originalHex, avgColor);
+        }
+      }
+      
+      // Reduziere auf die häufigsten Farben
+      const topColors = reduceColors(colorCounts);
+      const colorMap = new Map<string, { web: string; pearl: string }>();
+      
+      // Mappe die reduzierten Farben auf die Perlenpalette
+      topColors.forEach(originalHex => {
+        const color = allColors.get(originalHex)!;
+        const { closestWebSafeColor, closestPaletteColor } = findClosestColor(
+          color.r,
+          color.g,
+          color.b,
+          settings.palette,
+          settings.colors,
+          webSafeColors
+        );
+        colorMap.set(originalHex, { web: closestWebSafeColor, pearl: closestPaletteColor });
+      });
+      
+      // Zeichne das finale Bild
+      for (let y = 0; y < settings.height; y++) {
+        for (let x = 0; x < settings.width; x++) {
+          const avgColor = calculateAverageColor(
+            imageData,
+            x * cellWidth,
+            y * cellHeight,
+            tempCanvas.width,
+            tempCanvas.height,
+            cellWidth,
+            cellHeight
+          );
+          
+          const originalHex = rgbToHex(avgColor.r, avgColor.g, avgColor.b);
+          let mappedColor = colorMap.get(originalHex);
+          
+          if (!mappedColor) {
+            const { closestWebSafeColor, closestPaletteColor } = findClosestColor(
+              avgColor.r,
+              avgColor.g,
+              avgColor.b,
+              settings.palette,
+              settings.colors,
+              webSafeColors
+            );
+            mappedColor = { web: closestWebSafeColor, pearl: closestPaletteColor };
+          }
+          
+          ctx.fillStyle = mappedColor.pearl;
+          ctx.fillRect(x, y, 1, 1);
+        }
+      }
+      
+      // Aktualisiere das Farbmapping für die Anzeige
+      const uniqueColorMapping = Array.from(colorMap.entries()).map(([original, mapped]) => ({
+        original,
+        mapped: mapped.pearl
+      }));
+      setColorMapping(uniqueColorMapping);
     };
   }, [image, settings]);
 
   return (
-    <div className="aspect-square rounded-lg overflow-hidden bg-white shadow-lg p-4">
-      <canvas
-        ref={canvasRef}
-        className="w-full h-full"
-        style={{ imageRendering: "pixelated" }}
+    <div className="space-y-4">
+      <div className="aspect-square rounded-lg overflow-hidden bg-white shadow-lg p-4">
+        <canvas
+          ref={canvasRef}
+          className="w-full h-full"
+          style={{ imageRendering: "pixelated" }}
+        />
+      </div>
+      <ColorMapping
+        originalImage={image}
+        mappedColors={colorMapping}
       />
     </div>
   );
